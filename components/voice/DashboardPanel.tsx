@@ -81,7 +81,7 @@ function SourceImage({ src, alt }: { src: string; alt: string }): React.JSX.Elem
 export function DashboardPanel({ items, className }: DashboardPanelProps): React.JSX.Element {
   if (items.length === 0) {
     return (
-      <div className={cn("flex items-center justify-center py-8 text-sm text-muted-foreground", className)}>
+      <div className={cn("flex items-center justify-center py-8 text-sm text-white/40", className)}>
         No sources yet — they&apos;ll appear as the agent researches.
       </div>
     );
@@ -89,7 +89,7 @@ export function DashboardPanel({ items, className }: DashboardPanelProps): React
 
   return (
     <div className={cn("space-y-2", className)}>
-      <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground px-1">
+      <h2 className="text-xs font-semibold uppercase tracking-wider text-white/50 px-1">
         Sources ({items.length})
       </h2>
 
@@ -106,20 +106,20 @@ export function DashboardPanel({ items, className }: DashboardPanelProps): React
                 rel="noopener noreferrer"
                 className="block group"
               >
-                <Card size="sm" className="transition-colors group-hover:ring-primary/30 overflow-hidden">
+                <Card size="sm" className="transition-colors group-hover:ring-purple-500/30 overflow-hidden bg-white/5 border-purple-500/15 backdrop-blur-sm">
                   {item.imageUrl && (
                     <SourceImage src={item.imageUrl} alt={item.title} />
                   )}
                   <CardHeader className="pb-0">
                     <div className="flex items-start gap-2">
-                      <CardTitle className="flex-1 line-clamp-2 text-xs leading-snug">
+                      <CardTitle className="flex-1 line-clamp-2 text-xs leading-snug text-white/90">
                         {item.title}
                       </CardTitle>
-                      <ExternalLink className="w-3 h-3 shrink-0 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity mt-0.5" />
+                      <ExternalLink className="w-3 h-3 shrink-0 text-white/40 opacity-0 group-hover:opacity-100 transition-opacity mt-0.5" />
                     </div>
                   </CardHeader>
                   <CardContent className="pt-0">
-                    <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
+                    <p className="text-xs text-white/50 line-clamp-2 mb-2">
                       {item.snippet}
                     </p>
                     <div className="flex items-center gap-2">
@@ -127,7 +127,7 @@ export function DashboardPanel({ items, className }: DashboardPanelProps): React
                         <Icon className="w-3 h-3" />
                         {config.label}
                       </Badge>
-                      <span className="text-[10px] text-muted-foreground truncate">
+                      <span className="text-[10px] text-white/40 truncate">
                         {item.domain}
                       </span>
                     </div>

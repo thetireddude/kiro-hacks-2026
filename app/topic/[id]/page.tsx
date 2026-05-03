@@ -3,7 +3,6 @@
 import { use, useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   type ConversationState,
@@ -18,6 +17,7 @@ import type {
   DashboardItem,
 } from "@/lib/voice-agent/types";
 import { DashboardPanel } from "@/components/voice/DashboardPanel";
+import { Plasma } from "@/components/ui/Plasma";
 import {
   ArrowLeft,
   Mic,
@@ -715,17 +715,28 @@ export default function TopicPage({
   // --- Render: Error / Topic not found -------------------------------------
   if (phase === "error" && !topic) {
     return (
-      <main className="flex flex-1 flex-col items-center justify-center px-4 py-12">
-        <div className="flex flex-col items-center gap-4 max-w-md text-center">
-          <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center">
-            <AlertCircle className="w-8 h-8 text-destructive" />
+      <main className="relative flex h-screen flex-col items-center justify-center overflow-hidden bg-[#0a0514]">
+        {/* Plasma Background */}
+        <div className="fixed inset-0 z-0">
+          <Plasma
+            color="#7c3aed"
+            speed={0.4}
+            direction="forward"
+            scale={1.1}
+            opacity={0.6}
+            mouseInteractive={false}
+          />
+        </div>
+        <div className="relative z-10 flex flex-col items-center gap-4 max-w-md text-center">
+          <div className="w-16 h-16 rounded-full bg-destructive/20 flex items-center justify-center">
+            <AlertCircle className="w-8 h-8 text-red-400" />
           </div>
-          <h1 className="text-xl font-semibold">Topic Not Found</h1>
-          <p className="text-sm text-muted-foreground">
+          <h1 className="text-xl font-semibold text-white">Topic Not Found</h1>
+          <p className="text-sm text-white/60">
             {errorMsg ||
-              "The topic you&apos;re looking for doesn&apos;t exist or has expired."}
+              "The topic you're looking for doesn't exist or has expired."}
           </p>
-          <Button onClick={() => router.push("/")} className="mt-2">
+          <Button onClick={() => router.push("/")} className="mt-2 bg-purple-600 hover:bg-purple-700 text-white border-0">
             <ArrowLeft className="w-4 h-4" />
             Back to Feed
           </Button>
@@ -736,25 +747,49 @@ export default function TopicPage({
 
   // --- Render: Main topic page ---------------------------------------------
   return (
-    <main className="flex flex-col h-screen">
-      {/* Header */}
-      <header className="flex items-center gap-3 border-b px-4 py-3 shrink-0">
+    <>
+    {/* Full-viewport dark background to prevent body bleed-through */}
+    <style>{`html, body { background: #0a0514 !important; }`}</style>
+    <main className="relative flex flex-col h-screen overflow-hidden bg-[#0a0514]">
+      {/* Plasma Background */}
+      <div className="fixed inset-0 z-0">
+        <Plasma
+          color="#7c3aed"
+          speed={0.4}
+          direction="forward"
+          scale={1.1}
+          opacity={0.5}
+          mouseInteractive={false}
+        />
+      </div>
+
+      {/* Header — glassy style matching homepage */}
+      <header
+        className="relative z-20 flex items-center gap-3 px-6 py-3 shrink-0"
+        style={{
+          background: "rgba(10, 5, 20, 0.6)",
+          backdropFilter: "blur(18px)",
+          WebkitBackdropFilter: "blur(18px)",
+          borderBottom: "1px solid rgba(139, 92, 246, 0.2)",
+          boxShadow: "0 2px 32px 0 rgba(109, 40, 217, 0.12)",
+        }}
+      >
         <Button
           variant="ghost"
           size="sm"
           onClick={handleBackToFeed}
-          className="shrink-0"
+          className="shrink-0 text-white/70 hover:text-white hover:bg-white/10"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to Feed
         </Button>
 
         <div className="flex-1 min-w-0">
-          <h1 className="text-sm font-semibold truncate">
+          <h1 className="text-sm font-semibold truncate text-white">
             {topic?.title ?? "Loading…"}
           </h1>
           {topic?.category && (
-            <Badge variant="secondary" className="mt-0.5">
+            <Badge variant="secondary" className="mt-0.5 bg-purple-500/20 text-purple-300 border-purple-500/30">
               {topic.category}
             </Badge>
           )}
@@ -764,11 +799,11 @@ export default function TopicPage({
         {showVoiceControls && (
           <div className="flex items-center gap-2 shrink-0">
             <div className="relative">
-              <Badge variant="secondary" className={statusCfg.color}>
+              <Badge variant="secondary" className={cn("border-0", statusCfg.color)}>
                 {statusCfg.label}
               </Badge>
               {statusCfg.pulse && (
-                <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-primary animate-ping" />
+                <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-purple-400 animate-ping" />
               )}
             </div>
           </div>
@@ -776,29 +811,41 @@ export default function TopicPage({
       </header>
 
       {/* Content area — sources (left, majority) + chat (right) */}
-      <div className="flex-1 overflow-hidden flex flex-col md:flex-row">
+      <div className="relative z-10 flex-1 overflow-hidden flex flex-col md:flex-row">
         {/* Dashboard / sources pane — takes majority of width */}
-        <div className="hidden md:flex md:flex-1 overflow-y-auto border-r p-4">
+        <div
+          className="hidden md:flex md:flex-1 overflow-y-auto p-4"
+          style={{
+            borderRight: "1px solid rgba(139, 92, 246, 0.15)",
+          }}
+        >
           {dashboardItems.length > 0 ? (
             <DashboardPanel items={dashboardItems} className="w-full" />
           ) : (
-            <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
+            <div className="flex flex-1 items-center justify-center text-sm text-white/40">
               Sources will appear here as the agent researches.
             </div>
           )}
         </div>
 
         {/* Chat / conversation pane — fixed-width column on the right */}
-        <div className="flex flex-col overflow-hidden w-full md:w-[380px] lg:w-[420px] shrink-0">
+        <div
+          className="flex flex-col overflow-hidden w-full md:w-[380px] lg:w-[420px] shrink-0"
+          style={{
+            background: "rgba(10, 5, 20, 0.4)",
+            backdropFilter: "blur(12px)",
+            WebkitBackdropFilter: "blur(12px)",
+          }}
+        >
           {/* Researching state */}
           {phase === "researching" && (
             <div className="flex-1 flex flex-col items-center justify-center gap-4 px-4">
-              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-                <Sparkles className="w-8 h-8 text-primary animate-pulse" />
+              <div className="w-16 h-16 rounded-full bg-purple-500/20 flex items-center justify-center">
+                <Sparkles className="w-8 h-8 text-purple-400 animate-pulse" />
               </div>
               <div className="text-center">
-                <p className="text-sm font-medium">Researching your topic…</p>
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-sm font-medium text-white">Researching your topic…</p>
+                <p className="text-xs text-white/50 mt-1">
                   Gathering sources and multiple perspectives
                 </p>
               </div>
@@ -824,8 +871,8 @@ export default function TopicPage({
                       className={cn(
                         "max-w-[85%] rounded-xl px-3 py-2 text-sm",
                         entry.role === "user"
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-muted text-foreground"
+                          ? "bg-purple-600 text-white"
+                          : "bg-white/10 text-white/90 backdrop-blur-sm"
                       )}
                     >
                       <p className="text-xs font-medium opacity-70 mb-0.5">
@@ -839,43 +886,40 @@ export default function TopicPage({
                 {/* Limit reached message */}
                 {phase === "limit_reached" && (
                   <div className="flex justify-center py-4">
-                    <Card className="max-w-sm">
-                      <CardContent className="p-4 text-center">
-                        <p className="text-sm text-muted-foreground mb-3">
-                          We&apos;ve reached the conversation limit for this topic.
-                        </p>
-                        <Button onClick={handleBackToFeed} size="sm">
-                          <ArrowLeft className="w-4 h-4" />
-                          Explore other topics
-                        </Button>
-                      </CardContent>
-                    </Card>
+                    <div className="max-w-sm rounded-xl p-4 text-center bg-white/10 backdrop-blur-sm border border-purple-500/20">
+                      <p className="text-sm text-white/70 mb-3">
+                        We&apos;ve reached the conversation limit for this topic.
+                      </p>
+                      <Button onClick={handleBackToFeed} size="sm" className="bg-purple-600 hover:bg-purple-700 text-white border-0">
+                        <ArrowLeft className="w-4 h-4" />
+                        Explore other topics
+                      </Button>
+                    </div>
                   </div>
                 )}
 
                 {/* Error with retry */}
                 {phase === "error" && topic && (
                   <div className="flex justify-center py-4">
-                    <Card className="max-w-sm">
-                      <CardContent className="p-4 text-center">
-                        <AlertCircle className="w-6 h-6 text-destructive mx-auto mb-2" />
-                        <p className="text-sm text-destructive mb-3">
-                          {errorMsg || "Something went wrong."}
-                        </p>
-                        <div className="flex gap-2 justify-center">
-                          <Button
-                            onClick={handleRetry}
-                            size="sm"
-                            variant="outline"
-                          >
-                            Try again
-                          </Button>
-                          <Button onClick={handleBackToFeed} size="sm">
-                            Back to Feed
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
+                    <div className="max-w-sm rounded-xl p-4 text-center bg-white/10 backdrop-blur-sm border border-red-500/20">
+                      <AlertCircle className="w-6 h-6 text-red-400 mx-auto mb-2" />
+                      <p className="text-sm text-red-300 mb-3">
+                        {errorMsg || "Something went wrong."}
+                      </p>
+                      <div className="flex gap-2 justify-center">
+                        <Button
+                          onClick={handleRetry}
+                          size="sm"
+                          variant="outline"
+                          className="border-white/20 text-white hover:bg-white/10"
+                        >
+                          Try again
+                        </Button>
+                        <Button onClick={handleBackToFeed} size="sm" className="bg-purple-600 hover:bg-purple-700 text-white border-0">
+                          Back to Feed
+                        </Button>
+                      </div>
+                    </div>
                   </div>
                 )}
 
@@ -885,10 +929,16 @@ export default function TopicPage({
           )}
 
           {/* Voice controls footer */}
-          <div className="shrink-0 border-t px-4 py-3">
+          <div
+            className="shrink-0 px-4 py-3"
+            style={{
+              borderTop: "1px solid rgba(139, 92, 246, 0.15)",
+              background: "rgba(10, 5, 20, 0.5)",
+            }}
+          >
             <div className="flex items-center justify-center gap-3">
               {phase === "briefing_ready" && !voiceActive && (
-                <p className="text-xs text-muted-foreground animate-pulse">
+                <p className="text-xs text-white/50 animate-pulse">
                   Connecting voice…
                 </p>
               )}
@@ -897,7 +947,7 @@ export default function TopicPage({
                 <Button
                   variant="destructive"
                   onClick={stopVoice}
-                  className="gap-2"
+                  className="gap-2 bg-red-600 hover:bg-red-700 border-0 text-white"
                 >
                   <Mic className="w-4 h-4" />
                   Stop listening
@@ -905,14 +955,14 @@ export default function TopicPage({
               )}
 
               {phase === "conversing" && !voiceActive && (
-                <Button onClick={startVoice} className="gap-2">
+                <Button onClick={startVoice} className="gap-2 bg-purple-600 hover:bg-purple-700 text-white border-0">
                   <Mic className="w-4 h-4" />
                   Resume voice
                 </Button>
               )}
 
               {voiceState === "error" && (
-                <p className="text-xs text-destructive text-center max-w-xs">
+                <p className="text-xs text-red-400 text-center max-w-xs">
                   {errorMsg}
                 </p>
               )}
@@ -924,5 +974,6 @@ export default function TopicPage({
       {/* Hidden audio element for voice playback */}
       <audio ref={audioRef} autoPlay playsInline className="hidden" />
     </main>
+    </>
   );
 }
