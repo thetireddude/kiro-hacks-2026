@@ -1,0 +1,25 @@
+- generic [active] [ref=e1]:
+  - main [ref=e2]:
+    - generic:
+      - generic:
+        - img
+        - img "vitruvian man"
+    - generic:
+      - img "large proportion figure"
+    - generic:
+      - img "large proportion figure right"
+    - heading "new news" [level=1] [ref=e7]
+    - generic [ref=e9]:
+      - generic [ref=e44]:
+        - status "Loading topic…" [ref=e47]:
+          - generic [ref=e58]: Loading topic…
+        - generic [ref=e59]:
+          - button "Go to item 1" [ref=e60]
+          - button "Go to item 2" [ref=e61]
+          - button "Go to item 3" [ref=e62]
+        - generic [ref=e63]: ↓ Scroll down
+      - paragraph [ref=e64]: Agent is discovering topics…
+    - paragraph [ref=e32]: mohamed x torriani
+  - button "Open Next.js Dev Tools" [ref=e38] [cursor=pointer]:
+    - img [ref=e39]
+  - alert [ref=e42]
