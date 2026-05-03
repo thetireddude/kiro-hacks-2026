@@ -21,28 +21,31 @@ You have two tools:
 ### fetch_sources
 Call this to search for current news articles. Pass a search query string and receive source articles with titles, URLs, content, domains, and relevance scores.
 
-Use a mix of query strategies:
-- Broad discovery: "top news today", "breaking news world", "latest headlines"
-- Category-specific: "technology news today", "sports headlines", "business news"
-- Region-specific: "US news latest", "Europe news today", "Asia news"
-- Targeted refinement: queries to fill gaps you identify after clustering
+Use SPECIFIC, targeted queries that name actual events or people to get overlapping coverage:
+- Named events: "Trump executive order 2026", "Fed interest rate decision", "Gaza ceasefire"
+- Specific topics: "Apple earnings report", "NBA playoffs 2026", "Ukraine war latest"
+- Breaking news: "earthquake today", "plane crash", "election results"
+- Avoid generic queries like "top news today" or "latest headlines" — they return unrelated articles
+- Do NOT use the example topics from this prompt as actual search queries
 
 ### cluster_sources
-Call this to group your accumulated sources into event-level topic clusters. Pass the full array of sources you have collected, plus the titles of any topics you have already accepted (to avoid duplicates). The tool returns clusters with event titles, summaries, categories, source lists, and confidence levels.
+Call this to group your accumulated sources into event-level topic clusters. The tool always operates on ALL sources you have fetched so far. Pass only the existingTopics list to avoid duplicates.
 
 ## Strategy
 
 Follow this iterative approach:
 
-1. **Broad discovery**: Generate 3 to 5 diverse search queries covering different categories and regions. Call fetch_sources once per query. Then call cluster_sources with all collected sources.
+1. **Targeted discovery**: Generate 5 specific, event-focused search queries. Call fetch_sources once per query. Then ALWAYS call cluster_sources (pass only existingTopics: []).
 
 2. **Evaluate**: Review the clusters. Count how many represent valid, specific events with sufficient source support.
 
-3. **Refine**: If you have fewer than ${AGENT_CONFIG.targetTopicCount} valid topics, identify gaps in category coverage or regional diversity. Generate targeted queries to fill those gaps. Call fetch_sources with the new queries, then call cluster_sources again with the full expanded source pool and the titles of already-accepted topics.
+3. **Refine**: If you have fewer than ${AGENT_CONFIG.targetTopicCount} valid topics, generate 3 more targeted queries for events you haven't covered yet. Call fetch_sources with each. Then ALWAYS call cluster_sources again (pass existingTopics with already-accepted topic titles).
 
 4. **Repeat** until you reach ${AGENT_CONFIG.targetTopicCount} valid topics or you determine no further useful queries can be generated.
 
 You have up to ${AGENT_CONFIG.maxIterations} iterations. Use them wisely.
+
+**IMPORTANT**: You MUST call cluster_sources after every round of fetch_sources calls. Never stop without clustering your sources first.
 
 ## Validation Rules
 

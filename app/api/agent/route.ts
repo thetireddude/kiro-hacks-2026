@@ -1,6 +1,9 @@
 import { runAgentLoop } from '@/lib/agent/loop'
 import type { AgentErrorResponse } from '@/lib/types'
 
+// Allow up to 5 minutes for the agent loop to complete
+export const maxDuration = 300
+
 export async function POST(request: Request): Promise<Response> {
   try {
     // Parse optional topicCount from request body (Req 11.2)

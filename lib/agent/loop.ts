@@ -165,6 +165,21 @@ function selectTopTopics(topics: Topic[], targetCount: number): Topic[] {
 }
 
 /**
+ * Parse the retry-after delay from an OpenAI 429 rate limit error message.
+ * Returns milliseconds to wait, defaulting to 5000ms if not parseable.
+ */
+function parseRateLimitDelay(errorMessage: string): number {
+  // OpenAI error format: "Please try again in 2.472s."
+  const match = errorMessage.match(/try again in (\d+(?:\.\d+)?)s/)
+  if (match) {
+    const seconds = parseFloat(match[1])
+    // Add a small buffer to avoid hitting the limit again immediately
+    return Math.ceil(seconds * 1000) + 500
+  }
+  return 5000
+}
+
+/**
  * Sleep for a given number of milliseconds.
  */
 function sleep(ms: number): Promise<void> {
@@ -214,8 +229,11 @@ export async function runAgentLoop(
           tools: TOOL_DEFINITIONS,
         })
       } catch (error) {
-        console.error('[AGENT] OpenAI API call failed, retrying in 1s...', error instanceof Error ? error.message : error)
-        await sleep(1000)
+        const errorMsg = error instanceof Error ? error.message : String(error)
+        const isRateLimit = errorMsg.includes('429') || errorMsg.includes('Rate limit')
+        const delay = isRateLimit ? parseRateLimitDelay(errorMsg) : 1000
+        console.error(`[AGENT] OpenAI API call failed, retrying in ${delay}ms...`, errorMsg)
+        await sleep(delay)
         try {
           response = await openai.chat.completions.create({
             model: mergedConfig.model,
@@ -224,13 +242,39 @@ export async function runAgentLoop(
             tools: TOOL_DEFINITIONS,
           })
         } catch (retryError) {
-          console.error('[AGENT] OpenAI API retry failed:', retryError instanceof Error ? retryError.message : retryError)
-          const elapsed = Date.now() - startTime
-          console.log(`[AGENT] Elapsed time: ${elapsed}ms (failed)`)
-          return {
-            error: 'OpenAI API call failed after retry',
-            code: 'AGENT_TIMEOUT',
-            partialTopics: state.validTopics.length > 0 ? state.validTopics : undefined,
+          const retryMsg = retryError instanceof Error ? retryError.message : String(retryError)
+          const retryIsRateLimit = retryMsg.includes('429') || retryMsg.includes('Rate limit')
+          if (retryIsRateLimit) {
+            // One more wait and try
+            const retryDelay = parseRateLimitDelay(retryMsg)
+            console.error(`[AGENT] OpenAI rate limited again, waiting ${retryDelay}ms...`, retryMsg)
+            await sleep(retryDelay)
+            try {
+              response = await openai.chat.completions.create({
+                model: mergedConfig.model,
+                temperature: mergedConfig.temperature,
+                messages,
+                tools: TOOL_DEFINITIONS,
+              })
+            } catch (finalError) {
+              console.error('[AGENT] OpenAI API final retry failed:', finalError instanceof Error ? finalError.message : finalError)
+              const elapsed = Date.now() - startTime
+              console.log(`[AGENT] Elapsed time: ${elapsed}ms (failed)`)
+              return {
+                error: 'OpenAI API call failed after retries',
+                code: 'AGENT_TIMEOUT',
+                partialTopics: state.validTopics.length > 0 ? state.validTopics : undefined,
+              }
+            }
+          } else {
+            console.error('[AGENT] OpenAI API retry failed:', retryMsg)
+            const elapsed = Date.now() - startTime
+            console.log(`[AGENT] Elapsed time: ${elapsed}ms (failed)`)
+            return {
+              error: 'OpenAI API call failed after retry',
+              code: 'AGENT_TIMEOUT',
+              partialTopics: state.validTopics.length > 0 ? state.validTopics : undefined,
+            }
           }
         }
       }
@@ -292,7 +336,29 @@ export async function runAgentLoop(
             queriesThisIteration++
             state.fetchCallCount++
 
-            const output = await executeFetchSources({ query: input.query })
+            let output: { sources: RawSource[] }
+            try {
+              output = await executeFetchSources({ query: input.query })
+            } catch (fetchError) {
+              const msg = fetchError instanceof Error ? fetchError.message : 'fetch_sources failed'
+              console.error(`[AGENT] fetch_sources hard error: ${msg}`)
+              // Surface config errors (missing API key) immediately
+              if (msg.includes('TAVILY_API_KEY')) {
+                return {
+                  error: msg,
+                  code: 'TOOL_FAILURE',
+                  partialTopics: state.validTopics.length > 0 ? state.validTopics : undefined,
+                }
+              }
+              // For other errors, push an error result and continue
+              messages.push({
+                role: 'tool',
+                tool_call_id: toolCall.id,
+                content: JSON.stringify({ error: msg }),
+              })
+              continue
+            }
+
             sourcesThisIteration += output.sources.length
 
             // Merge into source pool and deduplicate by URL (Req 4.5, 7.1)
@@ -305,7 +371,9 @@ export async function runAgentLoop(
             state.sourcePool = deduplicateByUrl(state.sourcePool)
 
             const input = args as { sources?: RawSource[]; existingTopics?: string[] }
-            const sourcesToCluster = input.sources ?? state.sourcePool
+            // Always cluster the full source pool — ignore any subset the agent passes.
+            // The agent tends to pass a small subset, but we want all accumulated sources.
+            const sourcesToCluster = state.sourcePool
             const existingTopics = input.existingTopics ?? state.validTopics.map((t) => t.title)
 
             const output = await executeClusterSources({
@@ -365,6 +433,29 @@ export async function runAgentLoop(
     }
 
     // Finalization (Req 8.1–8.8)
+    // Safety net: if the source pool has grown since the last cluster call, run one final cluster pass
+    const lastClusteredCount = state.clusters.reduce((sum, c) => sum + c.sources.length, 0)
+    if (state.sourcePool.length > lastClusteredCount && state.sourcePool.length > 0) {
+      console.log(`[AGENT] Running final cluster pass on ${state.sourcePool.length} sources (last clustered: ${lastClusteredCount})`)
+      try {
+        const finalClusterOutput = await executeClusterSources({
+          sources: state.sourcePool,
+          existingTopics: state.validTopics.map((t) => t.title),
+        })
+        const existingTitles = new Set(state.validTopics.map((t) => t.title.toLowerCase()))
+        for (const cluster of finalClusterOutput.clusters) {
+          const topic = clusterToTopic(cluster, mergedConfig)
+          if (topic && !existingTitles.has(topic.title.toLowerCase())) {
+            state.validTopics.push(topic)
+            existingTitles.add(topic.title.toLowerCase())
+          }
+        }
+        console.log(`[AGENT] Final cluster pass: ${finalClusterOutput.clusters.length} clusters, ${state.validTopics.length} total valid topics`)
+      } catch (clusterError) {
+        console.error('[AGENT] Final cluster pass failed:', clusterError instanceof Error ? clusterError.message : clusterError)
+      }
+    }
+
     const finalTopics = selectTopTopics(state.validTopics, mergedConfig.targetTopicCount)
 
     // Assign fresh unique IDs and lastUpdated to finalized topics

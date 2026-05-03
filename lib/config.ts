@@ -11,9 +11,15 @@ export const AGENT_CONFIG = {
   /** Maximum representative sources to include per topic */
   maxRepresentativeSourcesPerTopic: 4,
 
-  /** OpenAI model to use */
-  model: 'gpt-4o' as const,
+  /** OpenAI model for the main agent loop (orchestration + query generation) */
+  model: 'gpt-4o-mini' as const,
+
+  /** OpenAI model for cluster_sources (high token usage — use mini to avoid TPM limits) */
+  clusteringModel: 'gpt-4o-mini' as const,
 
   /** Temperature for the agent (low for factual consistency) */
   temperature: 0.3,
+
+  /** Max characters of source content to send to cluster_sources (keeps token usage low) */
+  clusteringContentMaxChars: 200,
 }
