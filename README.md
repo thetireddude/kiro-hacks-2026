@@ -4,6 +4,14 @@ An AI-powered news discovery and voice conversation app. An autonomous agent dis
 
 Built as a hackathon prototype submission to the CalPoly SLO KiroHacks 2026 hakcathon.
 
+***
+<a href="https://new-news-ai.netlify.app" target="_blank">
+        <img src="https://img.shields.io/badge/🚀_TRY_THE_APP-79D6E8?style=for-the-badge&logoColor=white&labelColor=79D6E8" alt="Try The App" width="210">
+</a>
+
+**NOTE: When hosting on netlify, server fetch functions and API calls are limited to <26s of execution. If you encounter errors when the app is grabbing headlines such as "Agent failed to return topics" or HTML errors, please wait a few minutes and then reload the page. ☺️**
+*** 
+
 ## How It Works
 
 1. **Discover** — An AI agent autonomously searches for current news, clusters sources into event-level topics, and validates them
