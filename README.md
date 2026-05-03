@@ -233,4 +233,4 @@ The project is configured for Netlify deployment with `@netlify/plugin-nextjs`. 
 
 ## License
 
-OSI Open Source License
+OSI Open Source License - Apache 2.0
