@@ -21,7 +21,7 @@ export default function Home(): React.ReactElement {
       </div>
 
       {/* Vitruvian man centered behind title */}
-      <div className="absolute -top-10 z-10 pointer-events-none flex justify-center w-full">
+      <div className="absolute top-8 z-10 pointer-events-none flex justify-center w-full">
         <div className="relative">
           {/* Hard purple radial glow behind */}
           <div
@@ -85,8 +85,58 @@ export default function Home(): React.ReactElement {
         />
       </div>
 
+      {/* Glassy top navigation bar */}
+      <header
+        className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-3"
+        style={{
+          background: "rgba(10, 5, 20, 0.45)",
+          backdropFilter: "blur(18px)",
+          WebkitBackdropFilter: "blur(18px)",
+          borderBottom: "1px solid rgba(139, 92, 246, 0.18)",
+          boxShadow: "0 2px 32px 0 rgba(109, 40, 217, 0.12)",
+        }}
+      >
+        {/* Small proportions2 figure beside the wordmark */}
+        <div className="flex items-center gap-4">
+          <Image
+            src="/pallette/proportions2.png"
+            alt=""
+            aria-hidden={true}
+            width={120}
+            height={120}
+            className="w-10 h-10 object-contain opacity-70 pointer-events-none"
+            style={{
+              filter: "brightness(2.2) contrast(0.7) saturate(0.2) sepia(0.5) hue-rotate(200deg) drop-shadow(0 0 6px rgba(139, 92, 246, 0.8))",
+            }}
+          />
+
+          {/* Logo / wordmark */}
+          <span
+            className="text-white text-xl select-none"
+            style={{
+              fontFamily: "var(--font-chomsky), 'Libre Baskerville', serif",
+              letterSpacing: "0.3em",
+            }}
+          >
+            NEW NEWS
+          </span>
+        </div>
+
+        {/* Right credit */}
+        <span
+          className="text-white/50 text-sm select-none"
+          style={{
+            fontFamily: "'Inter', ui-sans-serif, system-ui, sans-serif",
+            fontWeight: 300,
+            letterSpacing: "0.12em",
+          }}
+        >
+          Mohamed x Torriani
+        </span>
+      </header>
+
       {/* Title with Glitch effect */}
-      <div className="absolute top-10 z-20 w-full flex justify-center">
+      <div className="absolute top-20 z-20 w-full flex justify-center">
         <GlitchTitle
           text="NEW NEWS"
           initialGlitchInterval={5000}
@@ -96,21 +146,11 @@ export default function Home(): React.ReactElement {
       </div>
 
       {/* News Feed beneath title */}
-      <div className="relative z-20 flex items-center justify-center mt-40">
+      <div className="relative z-20 flex items-center justify-center mt-64">
         <NewsFeed />
       </div>
 
-      {/* Credit text */}
-      <p
-        className="relative z-20 mt-6 text-white text-lg"
-        style={{
-          fontFamily: "'Inter', ui-sans-serif, system-ui, sans-serif",
-          fontWeight: 300,
-          letterSpacing: "0.1em",
-        }}
-      >
-        mohamed x torriani
-      </p>
+
     </main>
   );
 }

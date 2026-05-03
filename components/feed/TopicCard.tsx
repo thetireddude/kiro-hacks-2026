@@ -34,7 +34,7 @@ export function TopicCard({ topic }: TopicCardProps): React.ReactElement {
 
   return (
     <article
-      className="mx-auto w-full max-w-[480px] rounded-2xl border border-border bg-card p-6 shadow-sm sm:max-w-[560px]"
+      className="w-full h-full rounded-none border-0 bg-card p-8 flex flex-col"
       aria-label={`Topic: ${topic.title}`}
     >
       {/* Category badge */}
@@ -50,7 +50,7 @@ export function TopicCard({ topic }: TopicCardProps): React.ReactElement {
       </h2>
 
       {/* Summary */}
-      <p className="mt-2 text-base leading-relaxed text-muted">
+      <p className="mt-2 text-base leading-relaxed text-muted flex-1">
         {topic.summary}
       </p>
 
