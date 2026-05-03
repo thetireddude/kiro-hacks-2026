@@ -7,14 +7,42 @@ import { TopicCardSkeleton } from "./TopicCardSkeleton";
 import { ReloadButton } from "./ReloadButton";
 import type { Topic, AgentResponse, AgentErrorResponse } from "@/lib/types";
 
+const FEED_CACHE_KEY = "feed-topics";
+
 type FeedState =
   | { status: "idle" }
   | { status: "loading" }
   | { status: "success"; topics: Topic[] }
   | { status: "error"; message: string; partialTopics?: Topic[] };
 
+/**
+ * Try to restore cached topics from sessionStorage.
+ * Returns the topic array if valid, or null if missing/corrupt.
+ */
+function loadCachedTopics(): Topic[] | null {
+  try {
+    const raw = sessionStorage.getItem(FEED_CACHE_KEY);
+    if (!raw) return null;
+    const topics: Topic[] = JSON.parse(raw);
+    if (Array.isArray(topics) && topics.length > 0) return topics;
+  } catch {
+    // corrupt or unavailable — treat as cache miss
+  }
+  return null;
+}
+
+/** Persist topics to sessionStorage so navigating back doesn't re-fetch. */
+function cacheTopics(topics: Topic[]): void {
+  try {
+    sessionStorage.setItem(FEED_CACHE_KEY, JSON.stringify(topics));
+  } catch {
+    // quota exceeded or unavailable — non-critical
+  }
+}
+
 export function NewsFeed(): React.ReactElement | null {
-  const [feedState, setFeedState] = useState<FeedState>({ status: "loading" });
+  const [feedState, setFeedState] = useState<FeedState>({ status: "idle" });
+  const [mounted, setMounted] = useState(false);
 
   const fetchTopics = useCallback(async () => {
     setFeedState({ status: "loading" });
@@ -48,6 +76,7 @@ export function NewsFeed(): React.ReactElement | null {
         return;
       }
 
+      cacheTopics(topics);
       setFeedState({ status: "success", topics });
     } catch (err) {
       setFeedState({
@@ -58,10 +87,21 @@ export function NewsFeed(): React.ReactElement | null {
     }
   }, []);
 
-  // Fetch on mount
+  // On mount (client only), restore from cache or fetch fresh.
   useEffect(() => {
-    fetchTopics();
-  }, [fetchTopics]);
+    setMounted(true);
+    const cached = loadCachedTopics();
+    if (cached) {
+      setFeedState({ status: "success", topics: cached });
+    } else {
+      fetchTopics();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // During SSR and before client mount, render nothing to avoid hydration mismatch.
+  // The skeleton/content depends on sessionStorage which is client-only.
+  if (!mounted) return null;
 
   // Build reel items from topics
   const buildReelItems = (topics: Topic[]) =>
@@ -75,7 +115,7 @@ export function NewsFeed(): React.ReactElement | null {
     }));
 
   // Loading state — show skeleton inside the reel
-  if (feedState.status === "loading") {
+  if (feedState.status === "loading" || feedState.status === "idle") {
     const skeletonItems = Array.from({ length: 3 }, (_, i) => ({
       id: `skeleton-${i}`,
       content: (

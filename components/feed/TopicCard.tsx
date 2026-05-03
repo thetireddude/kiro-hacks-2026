@@ -1,6 +1,7 @@
 "use client";
 
-import { Newspaper, CircleDot } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Newspaper, CircleDot, ArrowRight } from "lucide-react";
 import type { Topic, TopicCategory, ConfidenceLevel } from "@/lib/types";
 
 const CATEGORY_COLORS: Record<TopicCategory, string> = {
@@ -23,19 +24,55 @@ const CONFIDENCE_STYLES: Record<
   low: { color: "text-gray-400", label: "Low confidence" },
 };
 
+/**
+ * Bridge the feed Topic shape (lib/types.ts) to the voice-agent Topic shape
+ * (lib/voice-agent/types.ts) and store it in sessionStorage so the topic
+ * detail page can pick it up.
+ */
+function storeTopicForVoiceAgent(topic: Topic): void {
+  const voiceTopic = {
+    id: topic.id,
+    title: topic.title,
+    summary: topic.summary,
+    category: topic.category,
+    trending: topic.confidence === "high",
+    fetchedAt: topic.lastUpdated ?? new Date().toISOString(),
+  };
+  try {
+    sessionStorage.setItem(`topic-${topic.id}`, JSON.stringify(voiceTopic));
+  } catch {
+    // sessionStorage may be unavailable (e.g. private browsing quota)
+  }
+}
+
 interface TopicCardProps {
   topic: Topic;
 }
 
 export function TopicCard({ topic }: TopicCardProps): React.ReactElement {
+  const router = useRouter();
   const categoryStyle =
     CATEGORY_COLORS[topic.category] ?? CATEGORY_COLORS.world;
   const confidence = CONFIDENCE_STYLES[topic.confidence];
 
+  const handleClick = (): void => {
+    storeTopicForVoiceAgent(topic);
+    router.push(`/topic/${topic.id}`);
+  };
+
   return (
     <article
-      className="w-full h-full rounded-none border-0 bg-card p-8 flex flex-col"
-      aria-label={`Topic: ${topic.title}`}
+      role="button"
+      tabIndex={0}
+      onClick={handleClick}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          handleClick();
+        }
+      }}
+      className="w-full h-full rounded-none border-0 bg-card p-8 flex flex-col cursor-pointer transition-colors hover:bg-card/90 active:bg-card/80"
+      aria-label={`Explore topic: ${topic.title}`}
     >
       {/* Category badge */}
       <span
@@ -67,6 +104,11 @@ export function TopicCard({ topic }: TopicCardProps): React.ReactElement {
             aria-hidden="true"
           />
           {topic.confidence}
+        </span>
+
+        <span className="ml-auto flex items-center gap-1 text-primary font-medium">
+          Explore
+          <ArrowRight className="h-4 w-4" aria-hidden="true" />
         </span>
       </div>
     </article>

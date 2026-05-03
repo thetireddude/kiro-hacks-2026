@@ -143,8 +143,13 @@ export default function TopicPage({
           })
         );
       }
+    };
 
-      // Clear topic-specific sessionStorage
+    // Only clear sessionStorage when the tab/window is actually closing,
+    // NOT on component unmount (React Strict Mode double-mounts would
+    // wipe the entry before the load effect can read it).
+    const handleBeforeUnload = () => {
+      cleanup();
       try {
         sessionStorage.removeItem(`topic-${id}`);
       } catch {
@@ -152,11 +157,19 @@ export default function TopicPage({
       }
     };
 
-    window.addEventListener("beforeunload", cleanup);
+    window.addEventListener("beforeunload", handleBeforeUnload);
 
     return () => {
-      window.removeEventListener("beforeunload", cleanup);
-      cleanup();
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      // On unmount, clean up WebRTC/audio but preserve sessionStorage
+      // so Strict Mode remounts can still read the topic.
+      disconnect(pcRef.current);
+      pcRef.current = null;
+      dcRef.current = null;
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.srcObject = null;
+      }
     };
   }, [id]);
 
@@ -723,7 +736,7 @@ export default function TopicPage({
 
   // --- Render: Main topic page ---------------------------------------------
   return (
-    <main className="flex flex-1 flex-col h-full max-h-screen">
+    <main className="flex flex-col h-screen">
       {/* Header */}
       <header className="flex items-center gap-3 border-b px-4 py-3 shrink-0">
         <Button
