@@ -13,7 +13,7 @@ type FeedState =
   | { status: "success"; topics: Topic[] }
   | { status: "error"; message: string; partialTopics?: Topic[] };
 
-export function NewsFeed(): React.ReactElement {
+export function NewsFeed(): React.ReactElement | null {
   const [feedState, setFeedState] = useState<FeedState>({ status: "loading" });
 
   const fetchTopics = useCallback(async () => {
@@ -125,6 +125,8 @@ export function NewsFeed(): React.ReactElement {
   }
 
   // Success state
+  if (feedState.status !== "success") return null;
+
   return (
     <div className="flex flex-col items-center gap-4">
       <ReelPanel items={buildReelItems(feedState.topics)} />

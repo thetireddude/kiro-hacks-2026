@@ -1,6 +1,6 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function POST() {
+export async function POST(request: NextRequest) {
   const apiKey = process.env.OPENAI_API_KEY;
 
   if (!apiKey) {
@@ -9,6 +9,27 @@ export async function POST() {
       { status: 500 }
     );
   }
+
+  // Accept optional topic context for the voice-agent topic page
+  let topicInstructions = "";
+  try {
+    const body = await request.json();
+    if (body?.topicContext) {
+      topicInstructions = body.topicContext;
+    }
+  } catch {
+    // No body or invalid JSON — use default instructions
+  }
+
+  const defaultInstructions = [
+    "You are a friendly, concise conversational assistant.",
+    "Keep your responses short and natural, like a real conversation.",
+    "You do not have access to live news, files, tools, or the internet.",
+    "If asked about those, politely let the user know.",
+    "Be warm, helpful, and to the point.",
+  ].join(" ");
+
+  const instructions = topicInstructions || defaultInstructions;
 
   try {
     const response = await fetch(
@@ -22,13 +43,7 @@ export async function POST() {
         body: JSON.stringify({
           model: "gpt-4o-realtime-preview-2024-12-17",
           voice: "verse",
-          instructions: [
-            "You are a friendly, concise conversational assistant.",
-            "Keep your responses short and natural, like a real conversation.",
-            "You do not have access to live news, files, tools, or the internet.",
-            "If asked about those, politely let the user know.",
-            "Be warm, helpful, and to the point.",
-          ].join(" "),
+          instructions,
           input_audio_transcription: {
             model: "whisper-1",
           },

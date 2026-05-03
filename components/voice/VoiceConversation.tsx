@@ -220,9 +220,7 @@ export default function VoiceConversation() {
       dc.onmessage = handleServerEvent;
 
       dc.onclose = () => {
-        if (state !== "idle") {
-          setState("idle");
-        }
+        setState("idle");
       };
 
       pc.oniceconnectionstatechange = () => {

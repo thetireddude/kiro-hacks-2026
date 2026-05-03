@@ -15,11 +15,16 @@ export interface TranscriptEntry {
 
 /**
  * Fetch an ephemeral session token from our backend API route.
+ * Optionally pass topicContext to configure the Realtime API with topic-aware instructions.
  */
-export async function fetchSessionToken(): Promise<{
+export async function fetchSessionToken(topicContext?: string): Promise<{
   client_secret: { value: string };
 }> {
-  const res = await fetch("/api/realtime-session", { method: "POST" });
+  const res = await fetch("/api/realtime-session", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(topicContext ? { topicContext } : {}),
+  });
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
     throw new Error(body.error || `Session request failed: ${res.status}`);
