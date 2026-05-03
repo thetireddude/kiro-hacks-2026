@@ -38,25 +38,10 @@ export const TOOL_DEFINITIONS: OpenAI.Chat.Completions.ChatCompletionTool[] = [
     function: {
       name: 'cluster_sources',
       description:
-        'Group news sources into event-level topic clusters. Filters out broad themes and returns only specific event clusters.',
+        'Group all accumulated news sources into event-level topic clusters. Filters out broad themes and returns only specific event clusters. Always operates on the full source pool.',
       parameters: {
         type: 'object',
         properties: {
-          sources: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                url: { type: 'string' },
-                title: { type: 'string' },
-                content: { type: 'string' },
-                domain: { type: 'string' },
-                publishedDate: { type: 'string' },
-                score: { type: 'number' },
-              },
-              required: ['url', 'title', 'content', 'domain', 'score'],
-            },
-          },
           existingTopics: {
             type: 'array',
             items: { type: 'string' },
@@ -64,7 +49,7 @@ export const TOOL_DEFINITIONS: OpenAI.Chat.Completions.ChatCompletionTool[] = [
               'Titles of already-accepted topics to avoid duplicates',
           },
         },
-        required: ['sources'],
+        required: [],
       },
     },
   },
@@ -78,6 +63,11 @@ export const TOOL_DEFINITIONS: OpenAI.Chat.Completions.ChatCompletionTool[] = [
 export async function executeFetchSources(
   input: FetchSourcesInput
 ): Promise<FetchSourcesOutput> {
+  // Fail fast if API key is missing — no point running the loop
+  if (!process.env.TAVILY_API_KEY) {
+    throw new Error('TAVILY_API_KEY is not set. Add it to .env.local to enable news search.')
+  }
+
   try {
     const results = await searchTavily(input.query)
 
@@ -100,7 +90,8 @@ export async function executeFetchSources(
       `[AGENT] fetch_sources failed for query="${input.query}":`,
       error instanceof Error ? error.message : error
     )
-    return { sources: [] }
+    // Re-throw so the loop can surface the error rather than silently returning empty
+    throw error
   }
 }
 
@@ -119,7 +110,7 @@ export async function executeClusterSources(
       index: i,
       title: s.title,
       domain: s.domain,
-      content: s.content.slice(0, 500),
+      content: s.content.slice(0, AGENT_CONFIG.clusteringContentMaxChars),
       url: s.url,
     }))
 
@@ -150,7 +141,7 @@ Respond with a JSON object containing a "clusters" array. Each cluster has:
 - confidence: "high" | "medium" | "low"`
 
     const response = await openai.chat.completions.create({
-      model: AGENT_CONFIG.model,
+      model: AGENT_CONFIG.clusteringModel,
       temperature: AGENT_CONFIG.temperature,
       messages: [
         { role: 'system', content: 'You are a precise JSON-outputting news clustering engine. Always respond with valid JSON only, no markdown fences.' },

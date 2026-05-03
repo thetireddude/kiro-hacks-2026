@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { GlitchTitle } from "@/components/ui/GlitchTitle";
 import { Plasma } from "@/components/ui/Plasma";
-import { ReelPanel } from "@/components/ui/ReelPanel";
+import { NewsFeed } from "@/components/feed/NewsFeed";
 
 export default function Home(): React.ReactElement {
   return (
@@ -95,9 +95,9 @@ export default function Home(): React.ReactElement {
         />
       </div>
 
-      {/* Curved Panel beneath title */}
-      <div className="relative z-20 flex items-center justify-center mt-24">
-        <ReelPanel />
+      {/* News Feed beneath title */}
+      <div className="relative z-20 flex items-center justify-center mt-40">
+        <NewsFeed />
       </div>
 
       {/* Credit text */}
