@@ -3,7 +3,7 @@
 export function TopicCardSkeleton(): React.ReactElement {
   return (
     <div
-      className="mx-auto w-full max-w-[480px] rounded-2xl border border-border bg-card p-6 shadow-sm sm:max-w-[560px]"
+      className="w-full h-full rounded-none border-0 bg-card p-8 flex flex-col"
       aria-label="Loading topic…"
       role="status"
     >

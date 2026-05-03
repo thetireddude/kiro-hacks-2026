@@ -68,7 +68,7 @@ export function NewsFeed(): React.ReactElement {
     topics.map((topic) => ({
       id: topic.id,
       content: (
-        <div className="flex h-full w-full items-center justify-center p-4">
+        <div className="flex h-full w-full items-stretch">
           <TopicCard topic={topic} />
         </div>
       ),
@@ -79,7 +79,7 @@ export function NewsFeed(): React.ReactElement {
     const skeletonItems = Array.from({ length: 3 }, (_, i) => ({
       id: `skeleton-${i}`,
       content: (
-        <div className="flex h-full w-full items-center justify-center p-4">
+        <div className="flex h-full w-full items-stretch">
           <TopicCardSkeleton />
         </div>
       ),
