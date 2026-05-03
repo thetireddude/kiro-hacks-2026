@@ -1,0 +1,22 @@
+- generic [active] [ref=e1]:
+  - main [ref=e2]:
+    - generic [ref=e3]:
+      - heading "Voice Conversation" [level=1] [ref=e4]
+      - paragraph [ref=e5]: Click start, then speak naturally. The AI will listen and respond by voice. Your conversation continues hands-free.
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - img [ref=e34]
+        - generic [ref=e13]: You're speaking
+      - button "End Conversation" [ref=e32]
+      - generic [ref=e16]:
+        - heading "Transcript" [level=2] [ref=e17]
+        - generic [ref=e18]:
+          - generic [ref=e37]:
+            - paragraph [ref=e38]: You
+            - paragraph [ref=e39]: I think it's finishing up, so I'm gonna see if it works.
+          - generic [ref=e41]:
+            - paragraph [ref=e42]: Assistant
+            - paragraph [ref=e43]: Sounds like your project is wrapping up. That's great news! How do you feel about it?
+  - button "Open Next.js Dev Tools" [ref=e25] [cursor=pointer]:
+    - img [ref=e26]
+  - alert [ref=e33]

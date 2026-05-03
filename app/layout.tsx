@@ -9,15 +9,15 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "New News",
-  description: "Your source for the latest stories.",
+  title: "Voice AI",
+  description: "Conversational voice AI powered by OpenAI Realtime API",
 };
 
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
   return (
     <html lang="en" className={playfair.variable}>
       <head>

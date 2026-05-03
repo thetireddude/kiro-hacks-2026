@@ -1,0 +1,28 @@
+- generic [active] [ref=e1]:
+  - main [ref=e2]:
+    - generic [ref=e3]:
+      - heading "Voice Conversation" [level=1] [ref=e4]
+      - paragraph [ref=e5]: Click start, then speak naturally. The AI will listen and respond by voice. Your conversation continues hands-free.
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - img [ref=e33]
+        - generic [ref=e13]: Listening
+      - button "End Conversation" [ref=e36]
+      - generic [ref=e16]:
+        - heading "Transcript" [level=2] [ref=e17]
+        - generic [ref=e18]:
+          - generic [ref=e38]:
+            - paragraph [ref=e39]: You
+            - paragraph [ref=e40]: Hello?
+          - generic [ref=e42]:
+            - paragraph [ref=e43]: Assistant
+            - paragraph [ref=e44]: Hello! How can I help you today?
+          - generic [ref=e46]:
+            - paragraph [ref=e47]: You
+            - paragraph [ref=e48]: How are you? Yes.
+          - generic [ref=e50]:
+            - paragraph [ref=e51]: Assistant
+            - paragraph [ref=e52]: I'm just a program, so I don't have feelings, but I'm here and ready to assist you! How are you doing?
+  - button "Open Next.js Dev Tools" [ref=e25] [cursor=pointer]:
+    - img [ref=e26]
+  - alert [ref=e32]
