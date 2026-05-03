@@ -1,36 +1,85 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Voice AI — Conversational Voice Agent
 
-## Getting Started
+A Next.js web app for continuous, hands-free voice conversations with an AI assistant powered by the OpenAI Realtime API.
 
-First, run the development server:
+## How it works
+
+1. Click **Start Conversation**
+2. Speak naturally — the mic stays open
+3. The AI listens, detects when you stop speaking (server-side VAD), and responds by voice
+4. A live transcript shows both sides of the conversation
+5. Click **End Conversation** when you're done
+
+No repeated button presses. The conversation flows naturally.
+
+## Tech stack
+
+- **Next.js 15** (App Router)
+- **React 19** + TypeScript
+- **Tailwind CSS v4** + shadcn/ui
+- **OpenAI Realtime API** via WebRTC
+- Server-side voice activity detection (VAD)
+
+## Getting started
+
+### Prerequisites
+
+- Node.js 18+
+- An OpenAI API key with Realtime API access
+
+### Setup
 
 ```bash
+# Install dependencies
+npm install
+
+# Copy the env file and add your API key
+cp .env.example .env.local
+# Edit .env.local and set OPENAI_API_KEY
+
+# Start the dev server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) and click **Start Conversation**.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Project structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+app/
+  page.tsx                        # Homepage
+  api/realtime-session/route.ts   # Ephemeral token endpoint
+components/
+  VoiceConversation.tsx           # Main voice conversation UI
+lib/
+  realtime.ts                     # WebRTC + Realtime API helpers
+```
 
-## Learn More
+## Architecture
 
-To learn more about Next.js, take a look at the following resources:
+- The **backend API route** (`/api/realtime-session`) creates an ephemeral session token using your `OPENAI_API_KEY`. The key never reaches the browser.
+- The **frontend** uses that token to establish a WebRTC connection directly with OpenAI's Realtime API.
+- **Server-side VAD** detects speech start/stop — no client-side processing needed.
+- Audio streams both ways over WebRTC. Transcript events arrive over a data channel.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Conversation states
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| State                | Description                        |
+| -------------------- | ---------------------------------- |
+| `idle`               | Ready to start                     |
+| `connecting`         | Fetching token + establishing WebRTC |
+| `listening`          | Mic open, waiting for speech       |
+| `user_speaking`      | User is talking                    |
+| `assistant_speaking` | AI is responding                   |
+| `error`              | Something went wrong               |
 
-## Deploy on Vercel
+## Environment variables
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+| Variable         | Required | Description          |
+| ---------------- | -------- | -------------------- |
+| `OPENAI_API_KEY` | Yes      | Your OpenAI API key  |
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Browser requirements
+
+- A modern browser with WebRTC support (Chrome, Edge, Firefox, Safari 16+)
+- Microphone permission
