@@ -126,9 +126,8 @@ export default function Home(): React.ReactElement {
         <span
           className="text-white/50 text-sm select-none"
           style={{
-            fontFamily: "'Inter', ui-sans-serif, system-ui, sans-serif",
-            fontWeight: 300,
-            letterSpacing: "0.12em",
+            fontFamily: "var(--font-chomsky), 'Libre Baskerville', serif",
+            letterSpacing: "0.3em",
           }}
         >
           Mohamed x Torriani
