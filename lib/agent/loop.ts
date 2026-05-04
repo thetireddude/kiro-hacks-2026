@@ -76,10 +76,16 @@ function clusterToTopic(
   const category = VALID_CATEGORIES.includes(cluster.category as TopicCategory)
     ? (cluster.category as TopicCategory)
     : null
-  if (!category) return null
+  if (!category) {
+    console.log(`[AGENT] Rejected cluster "${cluster.eventTitle}": invalid category "${cluster.category}"`)
+    return null
+  }
 
   // Validate source count
-  if (cluster.sources.length < config.minSourcesPerTopic) return null
+  if (cluster.sources.length < config.minSourcesPerTopic) {
+    console.log(`[AGENT] Rejected cluster "${cluster.eventTitle}": only ${cluster.sources.length} sources (need ${config.minSourcesPerTopic})`)
+    return null
+  }
 
   // Build representative sources
   const representativeSources: TopicSource[] = cluster.sources
@@ -94,15 +100,18 @@ function clusterToTopic(
     }))
 
   // Ensure we have at least 2 representative sources
-  if (representativeSources.length < 2) return null
+  if (representativeSources.length < 2) {
+    console.log(`[AGENT] Rejected cluster "${cluster.eventTitle}": only ${representativeSources.length} representative sources`)
+    return null
+  }
 
-  // Ensure at least one source has type "news"
-  const hasNewsSource = representativeSources.some((s) => s.type === 'news')
-  if (!hasNewsSource) return null
-
-  // Reject if all sources are social media
+  // Reject if ALL sources are social media (but don't require explicit "news" type —
+  // opinion, video, and unknown domains are acceptable alongside social)
   const allSocial = representativeSources.every((s) => s.type === 'social')
-  if (allSocial) return null
+  if (allSocial) {
+    console.log(`[AGENT] Rejected cluster "${cluster.eventTitle}": all sources are social media`)
+    return null
+  }
 
   // Determine confidence based on source count
   const confidence = getConfidence(cluster.sources.length)
@@ -123,10 +132,11 @@ function clusterToTopic(
 }
 
 /**
- * Select top topics by confidence and category diversity, up to targetTopicCount.
+ * Return all valid topics sorted by confidence (highest first), with category diversity
+ * used as a secondary ordering signal.
  */
-function selectTopTopics(topics: Topic[], targetCount: number): Topic[] {
-  if (topics.length <= targetCount) return topics
+function selectTopTopics(topics: Topic[]): Topic[] {
+  if (topics.length === 0) return topics
 
   // Sort by confidence priority: high > medium > low
   const confidenceOrder: Record<ConfidenceLevel, number> = {
@@ -135,27 +145,25 @@ function selectTopTopics(topics: Topic[], targetCount: number): Topic[] {
     low: 1,
   }
 
-  // First pass: sort by confidence
+  // Sort: category diversity first, then confidence within that
   const sorted = [...topics].sort(
     (a, b) => confidenceOrder[b.confidence] - confidenceOrder[a.confidence]
   )
 
-  // Second pass: ensure category diversity
+  // Reorder to lead with category diversity (one from each category first, then the rest)
   const selected: Topic[] = []
   const categoriesSeen = new Set<TopicCategory>()
 
   // First, pick one from each unique category (highest confidence first)
   for (const topic of sorted) {
-    if (selected.length >= targetCount) break
     if (!categoriesSeen.has(topic.category)) {
       categoriesSeen.add(topic.category)
       selected.push(topic)
     }
   }
 
-  // Fill remaining slots with highest confidence topics not yet selected
+  // Then append remaining topics (still sorted by confidence)
   for (const topic of sorted) {
-    if (selected.length >= targetCount) break
     if (!selected.includes(topic)) {
       selected.push(topic)
     }
@@ -456,7 +464,7 @@ export async function runAgentLoop(
       }
     }
 
-    const finalTopics = selectTopTopics(state.validTopics, mergedConfig.targetTopicCount)
+    const finalTopics = selectTopTopics(state.validTopics)
 
     // Assign fresh unique IDs and lastUpdated to finalized topics
     const now = new Date().toISOString()

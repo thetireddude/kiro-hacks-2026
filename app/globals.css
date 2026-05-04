@@ -1,4 +1,6 @@
 @import "tailwindcss";
+@import "../node_modules/tw-animate-css/dist/tw-animate.css";
+@import "shadcn/tailwind.css";
 
 @font-face {
   font-family: 'Chomsky';
@@ -9,29 +11,25 @@
 }
 
 :root {
-  --background: #fafafa;
-  --foreground: #171717;
-  --muted: #737373;
-  --muted-foreground: #a3a3a3;
-  --card: #ffffff;
-  --card-foreground: #171717;
-  --border: #e5e5e5;
-  --ring: #171717;
+  --background: #0a0a0a;
+  --foreground: #ededed;
+  --muted: #a3a3a3;
+  --muted-foreground: #737373;
+  --card: #171717;
+  --card-foreground: #ededed;
+  --border: #262626;
+  --ring: #ededed;
   --destructive: #ef4444;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-    --muted: #a3a3a3;
-    --muted-foreground: #737373;
-    --card: #171717;
-    --card-foreground: #ededed;
-    --border: #262626;
-    --ring: #ededed;
-    --destructive: #ef4444;
-  }
+  --primary: #e5e5e5;
+  --primary-foreground: #171717;
+  --secondary: #262626;
+  --secondary-foreground: #ededed;
+  --accent: #262626;
+  --accent-foreground: #ededed;
+  --popover: #171717;
+  --popover-foreground: #ededed;
+  --input: rgba(255, 255, 255, 0.15);
+  --radius: 0.625rem;
 }
 
 @theme inline {
@@ -44,6 +42,22 @@
   --color-border: var(--border);
   --color-ring: var(--ring);
   --color-destructive: var(--destructive);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-input: var(--input);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
 body {
@@ -66,4 +80,16 @@ body {
 .animate-gradient {
   background-size: 200% 200%;
   animation: gradient 15s ease infinite;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
 }

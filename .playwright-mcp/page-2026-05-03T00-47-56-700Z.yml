@@ -1,0 +1,15 @@
+- generic [active] [ref=e1]:
+  - main [ref=e2]:
+    - generic [ref=e3]:
+      - heading "Voice Conversation" [level=1] [ref=e4]
+      - paragraph [ref=e5]: Click start, then speak naturally. The AI will listen and respond by voice. Your conversation continues hands-free.
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - img [ref=e10]
+        - generic [ref=e13]: Ready
+      - button "Start Conversation" [ref=e14]
+      - generic [ref=e16]:
+        - heading "Transcript" [level=2] [ref=e17]
+        - paragraph [ref=e19]: Click "Start Conversation" to begin.
+  - button "Open Next.js Dev Tools" [ref=e25] [cursor=pointer]:
+    - img [ref=e26]

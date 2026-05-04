@@ -12,7 +12,8 @@
         "browser_navigate",
         "browser_take_screenshot",
         "browser_console_messages",
-        "browser_evaluate"
+        "browser_evaluate",
+        "browser_snapshot"
       ]
     }
   }
