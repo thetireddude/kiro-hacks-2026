@@ -21,5 +21,5 @@ export const AGENT_CONFIG = {
   temperature: 0.3,
 
   /** Max characters of source content to send to cluster_sources (keeps token usage low) */
-  clusteringContentMaxChars: 200,
+  clusteringContentMaxChars: 500,
 }
