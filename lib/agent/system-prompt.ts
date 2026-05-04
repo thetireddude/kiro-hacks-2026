@@ -50,7 +50,8 @@ Follow this iterative approach:
 
 3. **Refine**: If you have fewer than ${AGENT_CONFIG.targetTopicCount} valid topics:
    - Review what you've found so far and decide what queries would help fill the gaps.
-   - You might search for specific events you noticed but need more sources for, target underrepresented categories, or try a completely different angle.
+   - You might search for specific events you noticed but need more sources for, target underrepresented categories, or try a completely different angle. 
+   - You can also make event-specific queries to learn about certain events that you've identified but do not have enough sources to form a cluster for.
    - Do NOT just repeat the "latest trending news for X" queries from round 1 — you've already done those.
    - Call fetch_sources with your new queries. Then ALWAYS call cluster_sources again (pass existingTopics with already-accepted topic titles).
 
