@@ -3,7 +3,7 @@ export const AGENT_CONFIG = {
   targetTopicCount: 5,
 
   /** Maximum number of loop iterations before stopping */
-  maxIterations: 3,
+  maxIterations: 4,
 
   /** Minimum sources required to consider a topic valid */
   minSourcesPerTopic: 2,
@@ -17,7 +17,7 @@ export const AGENT_CONFIG = {
   /** OpenAI model for cluster_sources (high token usage — use mini to avoid TPM limits) */
   clusteringModel: 'gpt-4o-mini' as const,
 
-  /** Temperature for the agent (low for factual consistency) */
+  /** Temperature for the agexnt (low for factual consistency) */
   temperature: 0.3,
 
   /** Max characters of source content to send to cluster_sources (keeps token usage low) */

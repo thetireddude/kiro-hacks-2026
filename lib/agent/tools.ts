@@ -152,11 +152,11 @@ Respond with a JSON object containing a "clusters" array. Each cluster has:
 
     const content = response.choices[0]?.message?.content
     if (!content) {
-      console.error('[AGENT] cluster_sources returned empty response')
+      console.error('[AGENT] cluster_sources returned empty response from OpenAI')
       return { clusters: [] }
     }
 
-    const parsed: {
+    let parsed: {
       clusters?: Array<{
         eventTitle: string
         eventSummary: string
@@ -164,12 +164,21 @@ Respond with a JSON object containing a "clusters" array. Each cluster has:
         sourceIndices: number[]
         confidence: string
       }>
-    } = JSON.parse(content)
+    }
 
-    if (!parsed.clusters || !Array.isArray(parsed.clusters)) {
-      console.error('[AGENT] cluster_sources response missing clusters array')
+    try {
+      parsed = JSON.parse(content)
+    } catch (parseError) {
+      console.error('[AGENT] cluster_sources JSON parse failed. Raw content:', content.slice(0, 500))
       return { clusters: [] }
     }
+
+    if (!parsed.clusters || !Array.isArray(parsed.clusters)) {
+      console.error('[AGENT] cluster_sources response missing clusters array. Keys found:', Object.keys(parsed))
+      return { clusters: [] }
+    }
+
+    console.log(`[AGENT] cluster_sources raw: ${parsed.clusters.length} clusters returned by model`)
 
     const validConfidence = new Set<string>(['high', 'medium', 'low'])
 
