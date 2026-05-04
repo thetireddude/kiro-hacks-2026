@@ -5,7 +5,7 @@ An AI-powered news discovery and voice conversation app. An autonomous agent dis
 Built as a hackathon prototype submission to the CalPoly SLO KiroHacks 2026 hakcathon.
 
 ***
-<a href="https://new-news-ai.netlify.app" target="_blank">
+<a href="https://new-news-ai.vercel.app/" target="_blank">
         <img src="https://img.shields.io/badge/🚀_TRY_THE_APP-79D6E8?style=for-the-badge&logoColor=white&labelColor=79D6E8" alt="Try The App" width="210">
 </a>
 
